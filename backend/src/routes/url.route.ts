@@ -6,8 +6,8 @@ const router = Router();
 
 router.use(protectedRoute)
 
-router.get("/myurls",getUserUrls)
-router.post("/create-url",createShortCode)
+router.get("/urls",getUserUrls)
+router.post("/urls",createShortCode)
 router.get("/:shortCode",getOriginal)
 
 

@@ -3,6 +3,7 @@ import { registerUser,loginUser } from "../service/auth.service";
 import { AsyncHandler } from "../utils/AsyncHandler";
 import prisma from "../config/db";
 import { refreshUserToken } from "../service/auth.service";
+import { AppError } from "../utils/AppError";
 
 export const register = AsyncHandler(async(req:Request,res:Response)=>{
     const {name,email,password} = req.body;
@@ -83,6 +84,25 @@ export const logout = async (req: Request, res: Response) => {
     message: "Logged out successfully",
   });
 };
+
+export const me = AsyncHandler(async(req:Request,res:Response)=>{
+  const userId=req.user?.userId
+  if(!userId) throw new AppError("Not logged in",401);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true }, // never leak password/hashedRefreshToken
+  });
+ 
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+ 
+  return res.status(200).json({
+    success: true,
+    user,
+  });
+})
+
 export const refresh = AsyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
 
